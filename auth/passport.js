@@ -2,6 +2,7 @@
 
 var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var GitHubStrategy = require('passport-github').Strategy;
 var session = require('express-session');
 //var config = require('./config.json');
 
@@ -37,6 +38,24 @@ passport.use(new GoogleStrategy({
 ));
 
 
+passport.use(new GitHubStrategy({
+        clientID: 'b256ca5c8ad48c0a2646',
+        clientSecret: '668f94323666bf0581c309f35ff6fb42584bc5d9',
+        callbackURL: "http://localhost:3000/auth/github/callback"
+    },
+    function(accessToken, refreshToken, profile, done) {
+        var user;
+        if (profile) {
+            user = profile;
+            return done(null, user);
+        }
+        else {
+            return done(null, false);
+        }
+    }
+));
+
+
 var setup = function (app) {
     app.use(session({
         secret: 'keyboard cat',
@@ -63,6 +82,17 @@ var setup = function (app) {
         console.log(req.query);
         res.redirect('/account');
       });
+
+
+    app.get('/auth/github',
+        passport.authenticate('github'));
+
+    app.get('/auth/github/callback',
+        passport.authenticate('github', {failureRedirect: '/login'}),
+        function (req, res) {
+            // Successful authentication, redirect home.
+            res.redirect('/account');
+        });
 
   app.get('/logout', function(req, res){
     req.logout();
