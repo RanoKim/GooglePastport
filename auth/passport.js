@@ -9,6 +9,8 @@ var session = require('express-session');
 //var GOOGLE_CLIENT_ID = config.google.clientId;
 //var GOOGLE_CLIENT_SECRET = config.google.clientSecret;
 
+var token;
+
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
@@ -45,6 +47,9 @@ passport.use(new GitHubStrategy({
     },
     function(accessToken, refreshToken, profile, done) {
         var user;
+        console.log('Passort token : ' + accessToken)
+      console.log('Passort refreshToken : ' + refreshToken)
+      token = accessToken
         if (profile) {
             user = profile;
             return done(null, user);
@@ -91,7 +96,8 @@ var setup = function (app) {
         passport.authenticate('github', {failureRedirect: '/login'}),
         function (req, res) {
             // Successful authentication, redirect home.
-            res.redirect('/account');
+            console.log('GITHUB Callback : ' + token)
+            res.redirect('http://localhost:8080/?access-token=' + token);
         });
 
   app.get('/logout', function(req, res){
